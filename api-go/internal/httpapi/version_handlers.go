@@ -1,8 +1,10 @@
 package httpapi
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -10,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"mcmarket/api/internal/db"
 
@@ -156,17 +159,22 @@ func (s *Server) handleUploadVersion(w http.ResponseWriter, r *http.Request) {
 	uid := currentUser(r).ID
 	_ = s.Store.WriteAuditLog(&uid, "version.create", "plugin_version", itoa(pv.ID), `{"plugin_slug":"`+plugin.Slug+`","version":"`+version+`"}`, clientIP(r))
 
-	// DEV ONLY / TODO Phase 4: the Rust worker (workers-rust) doesn't exist
-	// yet, so there's nothing to actually scan the jar. When DEV_AUTO_APPROVE
-	// is set, immediately approve the upload instead of leaving it stuck in
-	// pending_scan forever. This bypass MUST be removed/disabled once the
-	// real scan pipeline (internal/v1/scan-jobs callback) is wired up.
+	// DEV ONLY: skip the scan pipeline entirely and approve immediately.
+	// Must be false in production (see WorkerInternalURL path below).
 	if s.Cfg.DevAutoApprove {
 		_ = s.Store.UpdateScanJobStatus(job.ID, "completed", `{"dev_auto_approve":true}`)
 		_ = s.Store.UpdateVersionStatus(pv.ID, "approved")
 		_ = s.Store.WriteAuditLog(&uid, "version.dev_auto_approve", "plugin_version", itoa(pv.ID), "{}", clientIP(r))
 		pv.Status = "approved"
+	} else if s.Cfg.WorkerInternalURL != "" {
+		status, resultJSON := s.scanJarSync(job.VersionID, destPath)
+		_ = s.Store.UpdateScanJobStatus(job.ID, "completed", resultJSON)
+		_ = s.Store.UpdateVersionStatus(pv.ID, status)
+		_ = s.Store.WriteAuditLog(&uid, "scan_job.complete", "plugin_version", itoa(pv.ID), `{"status":"`+status+`"}`, clientIP(r))
+		pv.Status = status
 	}
+	// else: WORKER_INTERNAL_URL unset and DEV_AUTO_APPROVE false — version
+	// stays pending_scan until an admin/operator configures scanning.
 
 	writeJSON(w, http.StatusCreated, versionResponse(pv))
 }
@@ -221,6 +229,54 @@ func (s *Server) handleDownloadVersion(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", `attachment; filename="`+plugin.Slug+"-"+pv.Version+`.jar"`)
 	w.Header().Set("Content-Type", "application/java-archive")
 	http.ServeContent(w, r, filepath.Base(pv.FilePath), fileModTime(pv.FilePath), f)
+}
+
+type scanJarRequest struct {
+	JobID    int64  `json:"job_id"`
+	FilePath string `json:"file_path"`
+}
+
+type scanJarResponse struct {
+	SHA256  string   `json:"sha256"`
+	Valid   bool     `json:"valid"`
+	Flagged bool     `json:"flagged"`
+	Reasons []string `json:"reasons"`
+}
+
+// scanJarSync calls the Rust worker synchronously and returns the resulting
+// version status ("approved" or "rejected") plus a JSON blob recorded on the
+// scan job row. Any failure to reach the worker rejects the version rather
+// than silently publishing an unscanned jar.
+func (s *Server) scanJarSync(jobID int64, filePath string) (string, string) {
+	reqBody, _ := json.Marshal(scanJarRequest{JobID: jobID, FilePath: filePath})
+	req, err := http.NewRequest(http.MethodPost, s.Cfg.WorkerInternalURL+"/v1/scan-jar", bytes.NewReader(reqBody))
+	if err != nil {
+		return "rejected", `{"error":"failed to build scan request"}`
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Internal-Secret", s.Cfg.InternalSharedSecret)
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "rejected", `{"error":"scan worker unreachable"}`
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "rejected", `{"error":"scan worker returned non-200"}`
+	}
+
+	var result scanJarResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "rejected", `{"error":"invalid scan worker response"}`
+	}
+
+	resultJSON, _ := json.Marshal(result)
+	if !result.Valid || result.Flagged {
+		return "rejected", string(resultJSON)
+	}
+	return "approved", string(resultJSON)
 }
 
 func (s *Server) loadVersion(r *http.Request) (*db.PluginVersion, *db.Plugin, error) {

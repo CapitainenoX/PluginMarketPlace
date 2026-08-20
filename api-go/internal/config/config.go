@@ -13,6 +13,7 @@ type Config struct {
 	UploadDir            string
 	CORSAllowedOrigin    string
 	InternalSharedSecret string
+	WorkerInternalURL    string
 	DevAutoApprove       bool
 	CookieSecure         bool
 	MaxUploadBytes       int64
@@ -25,6 +26,7 @@ func Load() Config {
 		UploadDir:            getEnv("UPLOAD_DIR", "./data/uploads"),
 		CORSAllowedOrigin:    getEnv("CORS_ALLOWED_ORIGIN", "http://localhost:3000"),
 		InternalSharedSecret: getEnv("INTERNAL_SHARED_SECRET", ""),
+		WorkerInternalURL:    getEnv("WORKER_INTERNAL_URL", ""),
 		DevAutoApprove:       getEnvBool("DEV_AUTO_APPROVE", true),
 		CookieSecure:         getEnvBool("COOKIE_SECURE", false),
 		MaxUploadBytes:       100 << 20, // 100MB, per plan
