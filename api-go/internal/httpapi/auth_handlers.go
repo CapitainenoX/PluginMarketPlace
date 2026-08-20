@@ -99,6 +99,7 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   s.Cfg.CookieSecure,
 		SameSite: http.SameSiteLaxMode,
+		Domain:   s.Cfg.CookieDomain,
 	})
 	writeJSON(w, http.StatusOK, map[string]string{"status": "logged_out"})
 }
@@ -126,6 +127,7 @@ func (s *Server) startSession(w http.ResponseWriter, r *http.Request, user *db.U
 		HttpOnly: true,
 		Secure:   s.Cfg.CookieSecure,
 		SameSite: http.SameSiteLaxMode,
+		Domain:   s.Cfg.CookieDomain,
 	})
 }
 

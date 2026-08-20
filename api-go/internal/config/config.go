@@ -16,6 +16,7 @@ type Config struct {
 	WorkerInternalURL    string
 	DevAutoApprove       bool
 	CookieSecure         bool
+	CookieDomain         string
 	MaxUploadBytes       int64
 }
 
@@ -29,6 +30,7 @@ func Load() Config {
 		WorkerInternalURL:    getEnv("WORKER_INTERNAL_URL", ""),
 		DevAutoApprove:       getEnvBool("DEV_AUTO_APPROVE", true),
 		CookieSecure:         getEnvBool("COOKIE_SECURE", false),
+		CookieDomain:         getEnv("COOKIE_DOMAIN", ""),
 		MaxUploadBytes:       100 << 20, // 100MB, per plan
 	}
 }
