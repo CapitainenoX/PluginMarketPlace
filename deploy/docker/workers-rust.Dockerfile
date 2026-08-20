@@ -1,7 +1,7 @@
 # Multi-stage build for workers-rust. Build context must be the repo root, e.g.:
 #   docker build -f deploy/docker/workers-rust.Dockerfile -t mcmarket-workers .
 
-FROM rust:1.85-slim-bookworm AS build
+FROM rust:1-slim-bookworm AS build
 WORKDIR /src
 COPY workers-rust/ .
 RUN cargo build --release
