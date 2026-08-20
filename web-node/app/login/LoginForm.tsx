@@ -21,7 +21,12 @@ export function LoginForm() {
     setPending(true);
     try {
       await api.login({ username, password });
-      router.push(searchParams.get("next") ?? "/dashboard");
+      const rawNext = searchParams.get("next");
+      const safeNext =
+        rawNext && rawNext.startsWith("/") && !rawNext.startsWith("//") && !rawNext.startsWith("/\\")
+          ? rawNext
+          : "/dashboard";
+      router.push(safeNext);
       router.refresh();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Login failed");
