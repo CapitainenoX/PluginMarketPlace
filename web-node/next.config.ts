@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
+  // Standalone output is required by deploy/docker/web-node.Dockerfile,
+  // which copies .next/standalone into the final image.
+  output: "standalone",
   // Pin the workspace root explicitly: this project isn't at the top of a
   // monorepo git checkout, so Turbopack's root auto-detection picks the
   // wrong ancestor and warns about the stray package-lock.json.
