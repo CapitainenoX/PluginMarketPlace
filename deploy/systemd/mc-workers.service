@@ -1,0 +1,30 @@
+# Build first: cd workers-rust && cargo build --release
+#              cp target/release/workers-rust /opt/mcmarket/bin/mc-workers
+# Then: cp deploy/systemd/mc-workers.service /etc/systemd/system/
+#       cp deploy/.env.example /etc/mcmarket/workers.env  (edit values for real)
+#       systemctl daemon-reload && systemctl enable --now mc-workers
+#
+# Binds 127.0.0.1 by default (BIND_HOST) — this is the path the plan's
+# "internal Go<->Rust traffic never leaves loopback" guarantee assumes:
+# both mc-api and mc-workers run on the same host, same network namespace.
+
+[Unit]
+Description=mcmarket Rust worker
+After=network.target
+
+[Service]
+Type=simple
+User=mcmarket
+Group=mcmarket
+WorkingDirectory=/opt/mcmarket
+EnvironmentFile=/etc/mcmarket/workers.env
+ExecStart=/opt/mcmarket/bin/mc-workers
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/mcmarket/data
+
+[Install]
+WantedBy=multi-user.target

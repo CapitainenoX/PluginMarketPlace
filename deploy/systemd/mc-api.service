@@ -1,0 +1,27 @@
+# Build first: cd api-go && CGO_ENABLED=0 go build -o /opt/mcmarket/bin/mc-api ./cmd/api
+# Then: cp deploy/systemd/mc-api.service /etc/systemd/system/
+#       cp deploy/.env.example /etc/mcmarket/api.env   (edit values for real)
+#       mkdir -p /opt/mcmarket/data && chown mcmarket:mcmarket /opt/mcmarket/data
+#       systemctl daemon-reload && systemctl enable --now mc-api
+
+[Unit]
+Description=mcmarket Go API
+After=network.target
+Before=mc-workers.service
+
+[Service]
+Type=simple
+User=mcmarket
+Group=mcmarket
+WorkingDirectory=/opt/mcmarket
+EnvironmentFile=/etc/mcmarket/api.env
+ExecStart=/opt/mcmarket/bin/mc-api
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/mcmarket/data
+
+[Install]
+WantedBy=multi-user.target

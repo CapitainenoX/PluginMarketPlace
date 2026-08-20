@@ -1,0 +1,5 @@
+# shared/openapi.yaml
+#
+# Placeholder for the single-source-of-truth API contract. Not authored in Phase 1 — the
+# api-go route handlers (see api-go/internal/httpapi) are the current source of truth for
+# request/response shapes. A future phase should backfill this file from those handlers.

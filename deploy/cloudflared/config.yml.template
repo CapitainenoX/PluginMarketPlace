@@ -1,0 +1,16 @@
+# Copy to ~/.cloudflared/config.yml (or wherever `cloudflared` looks) and
+# fill in the real tunnel id and credentials file path, e.g.:
+#   cloudflared tunnel create mc-marketplace
+#   cloudflared tunnel route dns mc-marketplace mc-marketplace.corelabs.network
+#   cloudflared tunnel route dns mc-marketplace mc-api.corelabs.network
+#   cloudflared tunnel run mc-marketplace
+
+tunnel: <TUNNEL_ID>
+credentials-file: /etc/cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: mc-marketplace.corelabs.network
+    service: http://localhost:3000
+  - hostname: mc-api.corelabs.network
+    service: http://localhost:8080
+  - service: http_status:404

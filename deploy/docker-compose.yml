@@ -1,0 +1,71 @@
+# Run from the repo root: docker compose -f deploy/docker-compose.yml up -d --build
+#
+# Note on the 127.0.0.1 Go<->Rust binding described in the plan: that
+# guarantee is meaningful on bare metal (systemd path, both processes on the
+# same loopback). Compose gives each service its own network namespace, so
+# workers-rust binds 0.0.0.0 here instead and relies on the private
+# `mc-internal` network (no published port, unreachable from outside the
+# compose network) plus the shared-secret header for the same isolation
+# guarantee.
+
+services:
+  api-go:
+    build:
+      context: ..
+      dockerfile: deploy/docker/api-go.Dockerfile
+    networks:
+      - mc-internal
+    ports:
+      - "8080:8080"
+    volumes:
+      - mc-data:/app/data
+    environment:
+      PORT: "8080"
+      DB_PATH: /app/data/marketplace.db
+      UPLOAD_DIR: /app/data/uploads
+      CORS_ALLOWED_ORIGIN: ${CORS_ALLOWED_ORIGIN:-http://localhost:3000}
+      INTERNAL_SHARED_SECRET: ${INTERNAL_SHARED_SECRET}
+      WORKER_INTERNAL_URL: http://workers-rust:8081
+      DEV_AUTO_APPROVE: "false"
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    depends_on:
+      - workers-rust
+    restart: unless-stopped
+
+  workers-rust:
+    build:
+      context: ..
+      dockerfile: deploy/docker/workers-rust.Dockerfile
+    networks:
+      - mc-internal
+    volumes:
+      - mc-data:/app/data
+    environment:
+      PORT: "8081"
+      BIND_HOST: "0.0.0.0"
+      INTERNAL_SHARED_SECRET: ${INTERNAL_SHARED_SECRET}
+    restart: unless-stopped
+
+  web-node:
+    build:
+      context: ..
+      dockerfile: deploy/docker/web-node.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+    networks:
+      - mc-internal
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8080}
+      API_INTERNAL_URL: http://api-go:8080
+    depends_on:
+      - api-go
+    restart: unless-stopped
+
+networks:
+  mc-internal:
+    driver: bridge
+
+volumes:
+  mc-data:

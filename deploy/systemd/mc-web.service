@@ -1,0 +1,26 @@
+# Build first: cd web-node && npm ci && npm run build
+# Then: cp deploy/systemd/mc-web.service /etc/systemd/system/
+#       cp deploy/.env.example /etc/mcmarket/web.env  (edit values for real)
+#       systemctl daemon-reload && systemctl enable --now mc-web
+#
+# Runs `next start`, which needs the full web-node/ tree (node_modules,
+# .next/, package.json) present at WorkingDirectory — not just a binary.
+
+[Unit]
+Description=mcmarket Next.js frontend
+After=network.target mc-api.service
+
+[Service]
+Type=simple
+User=mcmarket
+Group=mcmarket
+WorkingDirectory=/opt/mcmarket/web-node
+EnvironmentFile=/etc/mcmarket/web.env
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

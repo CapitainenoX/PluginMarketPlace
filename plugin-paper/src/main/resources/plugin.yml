@@ -1,0 +1,16 @@
+name: MCMarket
+version: '1.0.0'
+main: network.corelabs.mcmarket.MarketplacePlugin
+api-version: '1.21'
+author: corelabs
+description: In-game browser/installer for the self-hosted corelabs.network plugin marketplace.
+commands:
+  marketplace:
+    description: Opens the plugin marketplace GUI.
+    usage: /marketplace
+    aliases: [mcmarket, market]
+    permission: mcmarket.use
+permissions:
+  mcmarket.use:
+    description: Allows opening the marketplace GUI.
+    default: op

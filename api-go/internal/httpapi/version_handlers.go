@@ -1,0 +1,241 @@
+package httpapi
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"errors"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+
+	"mcmarket/api/internal/db"
+
+	"github.com/go-chi/chi/v5"
+)
+
+func versionResponse(v *db.PluginVersion) map[string]any {
+	return map[string]any{
+		"id":              v.ID,
+		"plugin_id":       v.PluginID,
+		"version":         v.Version,
+		"changelog":       v.Changelog,
+		"mc_version_min":  v.MCVersionMin,
+		"mc_version_max":  v.MCVersionMax,
+		"loaders":         strings.Split(v.Loaders, ","),
+		"file_sha256":     v.FileSHA256,
+		"file_size":       v.FileSize,
+		"downloads_count": v.DownloadsCount,
+		"status":          v.Status,
+		"created_at":      v.CreatedAt,
+	}
+}
+
+func (s *Server) handleListVersions(w http.ResponseWriter, r *http.Request) {
+	plugin, err := s.Store.GetPluginBySlug(chi.URLParam(r, "slug"))
+	if errors.Is(err, db.ErrNotFound) {
+		writeError(w, http.StatusNotFound, "plugin not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to load plugin")
+		return
+	}
+
+	versions, err := s.Store.ListVersionsByPlugin(plugin.ID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to list versions")
+		return
+	}
+
+	showAll := canManagePlugin(r, plugin)
+	out := make([]map[string]any, 0, len(versions))
+	for i := range versions {
+		if versions[i].Status != "approved" && !showAll {
+			continue
+		}
+		out = append(out, versionResponse(&versions[i]))
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"versions": out})
+}
+
+func (s *Server) handleUploadVersion(w http.ResponseWriter, r *http.Request) {
+	plugin, err := s.Store.GetPluginBySlug(chi.URLParam(r, "slug"))
+	if errors.Is(err, db.ErrNotFound) {
+		writeError(w, http.StatusNotFound, "plugin not found")
+		return
+	}
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to load plugin")
+		return
+	}
+	if !canManagePlugin(r, plugin) {
+		writeError(w, http.StatusForbidden, "not the plugin owner")
+		return
+	}
+
+	if err := r.ParseMultipartForm(32 << 20); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid multipart form or file too large (max 100MB)")
+		return
+	}
+
+	version := r.FormValue("version")
+	if version == "" {
+		writeError(w, http.StatusBadRequest, "version is required")
+		return
+	}
+	changelog := r.FormValue("changelog")
+	mcMin := r.FormValue("mc_version_min")
+	mcMax := r.FormValue("mc_version_max")
+	loaders := r.FormValue("loaders")
+	if loaders == "" {
+		loaders = "paper"
+	}
+
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "file is required")
+		return
+	}
+	defer file.Close()
+
+	pluginDir := filepath.Join(s.Cfg.UploadDir, plugin.Slug)
+	if err := os.MkdirAll(pluginDir, 0o755); err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to prepare upload directory")
+		return
+	}
+
+	// Filename is derived only from the plugin slug + submitted version
+	// string (not the client-supplied header.Filename), so there's no
+	// path-traversal surface from user input.
+	safeName := slugify(version) + filepath.Ext(header.Filename)
+	if filepath.Ext(safeName) == "" {
+		safeName += ".jar"
+	}
+	destPath := filepath.Join(pluginDir, safeName)
+
+	dest, err := os.Create(destPath)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to store upload")
+		return
+	}
+	hasher := sha256.New()
+	size, err := io.Copy(dest, io.TeeReader(file, hasher))
+	dest.Close()
+	if err != nil {
+		os.Remove(destPath)
+		writeError(w, http.StatusInternalServerError, "failed to store upload")
+		return
+	}
+
+	pv, err := s.Store.CreateVersion(db.CreateVersionParams{
+		PluginID:     plugin.ID,
+		Version:      version,
+		Changelog:    changelog,
+		MCVersionMin: mcMin,
+		MCVersionMax: mcMax,
+		Loaders:      loaders,
+		FilePath:     destPath,
+		FileSHA256:   hex.EncodeToString(hasher.Sum(nil)),
+		FileSize:     size,
+	})
+	if err != nil {
+		os.Remove(destPath)
+		writeError(w, http.StatusConflict, "this version already exists for this plugin")
+		return
+	}
+
+	job, err := s.Store.CreateScanJob(pv.ID)
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "failed to enqueue scan job")
+		return
+	}
+
+	uid := currentUser(r).ID
+	_ = s.Store.WriteAuditLog(&uid, "version.create", "plugin_version", itoa(pv.ID), `{"plugin_slug":"`+plugin.Slug+`","version":"`+version+`"}`, clientIP(r))
+
+	// DEV ONLY / TODO Phase 4: the Rust worker (workers-rust) doesn't exist
+	// yet, so there's nothing to actually scan the jar. When DEV_AUTO_APPROVE
+	// is set, immediately approve the upload instead of leaving it stuck in
+	// pending_scan forever. This bypass MUST be removed/disabled once the
+	// real scan pipeline (internal/v1/scan-jobs callback) is wired up.
+	if s.Cfg.DevAutoApprove {
+		_ = s.Store.UpdateScanJobStatus(job.ID, "completed", `{"dev_auto_approve":true}`)
+		_ = s.Store.UpdateVersionStatus(pv.ID, "approved")
+		_ = s.Store.WriteAuditLog(&uid, "version.dev_auto_approve", "plugin_version", itoa(pv.ID), "{}", clientIP(r))
+		pv.Status = "approved"
+	}
+
+	writeJSON(w, http.StatusCreated, versionResponse(pv))
+}
+
+func (s *Server) handleGetVersion(w http.ResponseWriter, r *http.Request) {
+	pv, plugin, err := s.loadVersion(r)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "version not found")
+		return
+	}
+	if pv.Status != "approved" && !canManagePlugin(r, plugin) {
+		writeError(w, http.StatusNotFound, "version not found")
+		return
+	}
+	writeJSON(w, http.StatusOK, versionResponse(pv))
+}
+
+func (s *Server) handleVersionStatus(w http.ResponseWriter, r *http.Request) {
+	pv, plugin, err := s.loadVersion(r)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "version not found")
+		return
+	}
+	if !canManagePlugin(r, plugin) {
+		writeError(w, http.StatusForbidden, "not the plugin owner")
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]string{"status": pv.Status})
+}
+
+func (s *Server) handleDownloadVersion(w http.ResponseWriter, r *http.Request) {
+	pv, plugin, err := s.loadVersion(r)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "version not found")
+		return
+	}
+	if pv.Status != "approved" && !canManagePlugin(r, plugin) {
+		writeError(w, http.StatusNotFound, "version not found")
+		return
+	}
+
+	f, err := os.Open(pv.FilePath)
+	if err != nil {
+		writeError(w, http.StatusNotFound, "file missing on disk")
+		return
+	}
+	defer f.Close()
+
+	_ = s.Store.IncrementVersionDownloads(pv.ID)
+	_ = s.Store.IncrementPluginDownloads(plugin.ID)
+
+	w.Header().Set("Content-Disposition", `attachment; filename="`+plugin.Slug+"-"+pv.Version+`.jar"`)
+	w.Header().Set("Content-Type", "application/java-archive")
+	http.ServeContent(w, r, filepath.Base(pv.FilePath), fileModTime(pv.FilePath), f)
+}
+
+func (s *Server) loadVersion(r *http.Request) (*db.PluginVersion, *db.Plugin, error) {
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		return nil, nil, db.ErrNotFound
+	}
+	pv, err := s.Store.GetVersionByID(id)
+	if err != nil {
+		return nil, nil, err
+	}
+	plugin, err := s.Store.GetPluginByID(pv.PluginID)
+	if err != nil {
+		return nil, nil, err
+	}
+	return pv, plugin, nil
+}

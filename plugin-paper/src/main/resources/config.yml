@@ -1,0 +1,13 @@
+# corelabs.network plugin marketplace client config
+
+# Base host of the marketplace API. Scheme defaults to https:// if omitted.
+api-base-url: 'mc-api.corelabs.network'
+
+# Per-server API key, generated from the marketplace dashboard. Required for
+# any authenticated action (installs still work anonymously if the plugin
+# being downloaded is public, but the key is needed for report-fingerprint
+# and any future rate-limit allowances).
+api-key: ''
+
+# Minutes between automatic update checks against installed plugins.
+update-check-interval-minutes: 45
