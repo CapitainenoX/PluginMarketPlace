@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Install the MCMarket Paper plugin to browse and install marketplace plugins in-game.",
 };
 
-const PLUGIN_VERSION = "1.0.3";
+const PLUGIN_VERSION = "1.0.4";
 const DOWNLOAD_URL = "/downloads/mcmarket-plugin.jar";
 
 export default function InstallPage() {

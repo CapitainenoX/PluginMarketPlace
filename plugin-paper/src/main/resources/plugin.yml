@@ -1,5 +1,5 @@
 name: MCMarket
-version: '1.0.3'
+version: '1.0.4'
 main: network.corelabs.mcmarket.MarketplacePlugin
 api-version: '1.21'
 author: corelabs

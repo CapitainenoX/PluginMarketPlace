@@ -1,6 +1,7 @@
 package network.corelabs.mcmarket.gui;
 
 import network.corelabs.mcmarket.MarketplacePlugin;
+import network.corelabs.mcmarket.model.PluginSummary;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -39,12 +40,35 @@ public class MainMenuGui implements MarketplaceGui {
     public void onClick(Player player, InventoryClickEvent event) {
         switch (event.getSlot()) {
             case 11 -> new BrowseAllGui(plugin, 0).open(player);
-            case 13 -> new SearchGui(plugin).open(player);
+            case 13 -> promptSearch(player);
             case 15 -> new UpdatesGui(plugin).open(player);
-            case 17 -> new ApiKeyGui(plugin).open(player);
+            case 17 -> promptApiKey(player);
             default -> {
             }
         }
+    }
+
+    private void promptSearch(Player player) {
+        plugin.getChatInput().prompt(player, "§eType your search query in chat:", query -> {
+            player.sendMessage("Searching for \"" + query + "\"...");
+            Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                List<PluginSummary> results;
+                try {
+                    results = plugin.getApiClient().listPlugins(query, null, 45, 0);
+                } catch (Exception e) {
+                    Bukkit.getScheduler().runTask(plugin, () -> player.sendMessage("Search failed: " + e.getMessage()));
+                    return;
+                }
+                Bukkit.getScheduler().runTask(plugin, () -> new SearchResultsGui(plugin, query, results).open(player));
+            });
+        });
+    }
+
+    private void promptApiKey(Player player) {
+        plugin.getChatInput().prompt(player, "§eType your new API key in chat:", key -> {
+            plugin.updateApiKey(key);
+            player.sendMessage("§aAPI key updated. It now applies to all marketplace requests.");
+        });
     }
 
     static ItemStack icon(Material material, String name, List<String> lore) {

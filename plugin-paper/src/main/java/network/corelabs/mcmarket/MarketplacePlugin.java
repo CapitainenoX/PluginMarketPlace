@@ -2,6 +2,7 @@ package network.corelabs.mcmarket;
 
 import network.corelabs.mcmarket.api.MarketplaceApiClient;
 import network.corelabs.mcmarket.command.MarketplaceCommand;
+import network.corelabs.mcmarket.gui.ChatInputManager;
 import network.corelabs.mcmarket.gui.GuiListener;
 import network.corelabs.mcmarket.install.PluginInstaller;
 import network.corelabs.mcmarket.install.UpdateChecker;
@@ -19,6 +20,7 @@ public class MarketplacePlugin extends JavaPlugin {
     private volatile MarketplaceApiClient apiClient;
     private PluginInstaller installer;
     private UpdateChecker updateChecker;
+    private ChatInputManager chatInput;
 
     @Override
     public void onEnable() {
@@ -33,7 +35,9 @@ public class MarketplacePlugin extends JavaPlugin {
         updateChecker = new UpdateChecker(this, apiClient, installer);
         updateChecker.start(getConfig().getLong("update-check-interval-minutes", 45));
 
+        chatInput = new ChatInputManager(this);
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
+        getServer().getPluginManager().registerEvents(chatInput, this);
         var executor = new MarketplaceCommand(this);
         getCommand("marketplace").setExecutor(executor);
         getCommand("marketplace").setTabCompleter(executor);
@@ -58,6 +62,10 @@ public class MarketplacePlugin extends JavaPlugin {
 
     public UpdateChecker getUpdateChecker() {
         return updateChecker;
+    }
+
+    public ChatInputManager getChatInput() {
+        return chatInput;
     }
 
     /** The marketplace slug MCMarket itself is published under - just another catalog entry. */

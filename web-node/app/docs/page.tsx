@@ -140,7 +140,7 @@ export default function DocsPage() {
           <P>Open the menu with <Code>/marketplace</Code>. Four entry points, no clutter:</P>
           <ul className="text-sm text-muted leading-relaxed list-disc list-inside space-y-2 mb-3">
             <li><strong className="text-foreground">All Plugins</strong> — every approved plugin on the marketplace, paginated.</li>
-            <li><strong className="text-foreground">Search</strong> — type a query into the anvil text box and click the result slot to submit.</li>
+            <li><strong className="text-foreground">Search</strong> — click it, then type your query in chat (type <Code>cancel</Code> to abort).</li>
             <li>
               <strong className="text-foreground">My Installed / Updates</strong> — every marketplace plugin currently on
               your server. This merges two sources: plugins this tool
@@ -165,9 +165,9 @@ export default function DocsPage() {
               restart to load.
             </li>
             <li>
-              <strong className="text-foreground">Settings</strong> — set the API key from in-game: same anvil
-              text-box pattern as Search, writes straight to{" "}
-              <Code>config.yml</Code> and takes effect immediately, no
+              <strong className="text-foreground">Settings</strong> — set the API key from in-game: click it, then
+              type the key in chat (same prompt as Search). Writes straight
+              to <Code>config.yml</Code> and takes effect immediately, no
               restart needed for the key itself.
             </li>
           </ul>
