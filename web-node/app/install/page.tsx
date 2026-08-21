@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Install the MCMarket Paper plugin to browse and install marketplace plugins in-game.",
 };
 
-const PLUGIN_VERSION = "1.0.4";
+const PLUGIN_VERSION = "1.0.5";
 const DOWNLOAD_URL = "/downloads/mcmarket-plugin.jar";
 
 export default function InstallPage() {
@@ -76,8 +76,9 @@ export default function InstallPage() {
 api-key: "your-server-api-key"`}
             </pre>
             <p className="text-muted mt-1">
-              Or skip the file entirely: open <code className="text-xs bg-neutral-100 px-1.5 py-0.5">/marketplace</code>{" "}
-              in-game and use <span className="font-medium text-foreground">Settings &rarr; Set API Key</span> — takes effect immediately, no restart.
+              Or skip the file entirely: run{" "}
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">/mcmarket setkey your-server-api-key</code>{" "}
+              (console recommended — never chat, it&apos;s a secret) — takes effect immediately, no restart.
             </p>
           </li>
           <li>

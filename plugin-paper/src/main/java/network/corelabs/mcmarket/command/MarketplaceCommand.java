@@ -64,7 +64,22 @@ public class MarketplaceCommand implements CommandExecutor, TabCompleter {
                     plugin.commandUpdatePlugin(sender, args[1]);
                 }
             }
-            default -> sender.sendMessage("Unknown subcommand. Usage: /mcmarket [reload|update <self|all|slug>]");
+            case "setkey" -> {
+                // Deliberately NOT taken over chat: a cancelled chat event is
+                // still visible to any other plugin listening (log/Discord
+                // bridges commonly don't check isCancelled()), and the server
+                // logs chat regardless. A command argument isn't broadcast to
+                // anyone and isn't picked up by chat-relay plugins, so it's
+                // the closest thing to a private channel this API has.
+                if (!requireAdmin(sender)) return true;
+                if (args.length < 2) {
+                    sender.sendMessage("Usage: /mcmarket setkey <api-key> (best run from console to avoid it landing in chat-adjacent logs)");
+                    return true;
+                }
+                plugin.updateApiKey(args[1]);
+                sender.sendMessage("API key updated. It now applies to all marketplace requests.");
+            }
+            default -> sender.sendMessage("Unknown subcommand. Usage: /mcmarket [reload|update <self|all|slug>|setkey <key>]");
         }
         return true;
     }
@@ -83,7 +98,7 @@ public class MarketplaceCommand implements CommandExecutor, TabCompleter {
             return List.of();
         }
         if (args.length == 1) {
-            return filter(Stream.of("reload", "update"), args[0]);
+            return filter(Stream.of("reload", "update", "setkey"), args[0]);
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("update")) {
             return filter(Stream.of("self", "all"), args[1]);

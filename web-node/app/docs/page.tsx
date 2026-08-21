@@ -165,10 +165,11 @@ export default function DocsPage() {
               restart to load.
             </li>
             <li>
-              <strong className="text-foreground">Settings</strong> — set the API key from in-game: click it, then
-              type the key in chat (same prompt as Search). Writes straight
-              to <Code>config.yml</Code> and takes effect immediately, no
-              restart needed for the key itself.
+              <strong className="text-foreground">Settings</strong> — shows the exact command to set the API key.
+              The key itself is set with <Code>/mcmarket setkey &lt;key&gt;</Code>, not through chat or the GUI directly:
+              a chat prompt would leave the key visible to any chat-logging/Discord-bridge
+              plugin and in server logs, so this one path is deliberately a
+              command argument instead. Takes effect immediately, no restart needed for the key itself.
             </li>
           </ul>
         </section>
@@ -211,11 +212,17 @@ export default function DocsPage() {
                 <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
                 <td className="p-3 text-muted">Updates one installed-via-MCMarket plugin by its marketplace slug. Works from console.</td>
               </tr>
-              <tr className="border-b border-border last:border-b-0">
+              <tr className="border-b border-border">
                 <td className="p-3"><Code>/mcmarket update all</Code></td>
                 <td className="p-3 text-muted">&mdash;</td>
                 <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
                 <td className="p-3 text-muted">Updates every outdated plugin MCMarket installed. Works from console.</td>
+              </tr>
+              <tr className="border-b border-border last:border-b-0">
+                <td className="p-3"><Code>/mcmarket setkey &lt;key&gt;</Code></td>
+                <td className="p-3 text-muted">&mdash;</td>
+                <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
+                <td className="p-3 text-muted">Sets the API key. Deliberately a command argument, not chat &mdash; keeps the key out of chat logs/relay plugins. Prefer running it from console.</td>
               </tr>
             </tbody>
           </table>
@@ -239,7 +246,7 @@ export default function DocsPage() {
 {`# Base host of the marketplace API.
 api-base-url: "https://mc-api.corelabs.network"
 
-# Per-server API key. Can also be set in-game via Settings -> Set API Key.
+# Per-server API key. Can also be set with /mcmarket setkey <key> (console recommended).
 api-key: ""
 
 # Minutes between automatic update checks.

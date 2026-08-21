@@ -6,7 +6,9 @@ api-base-url: 'mc-api.corelabs.network'
 # Per-server API key, generated from the marketplace dashboard. Required for
 # any authenticated action (installs still work anonymously if the plugin
 # being downloaded is public, but the key is needed for report-fingerprint
-# and any future rate-limit allowances).
+# and any future rate-limit allowances). Prefer setting this with
+# `/mcmarket setkey <key>` from console instead of editing it here over a
+# remote/shared editor session - either way, never paste it into chat.
 api-key: ''
 
 # Minutes between automatic update checks against installed plugins.

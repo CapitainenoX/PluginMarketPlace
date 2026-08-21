@@ -27,7 +27,11 @@ public class MainMenuGui implements MarketplaceGui {
                 "jars placed here manually - and",
                 "check for updates",
                 "(also where MCMarket updates itself)")));
-        inventory.setItem(17, icon(Material.LEVER, "Settings", List.of("Set the marketplace API key")));
+        inventory.setItem(17, icon(Material.LEVER, "Settings", List.of(
+                "API key is set via command, not chat",
+                "(chat isn't private - other plugins",
+                "and logs can see it). Click for the",
+                "exact command to run.")));
         GuiUtil.fillEmpty(inventory);
     }
 
@@ -42,7 +46,7 @@ public class MainMenuGui implements MarketplaceGui {
             case 11 -> new BrowseAllGui(plugin, 0).open(player);
             case 13 -> promptSearch(player);
             case 15 -> new UpdatesGui(plugin).open(player);
-            case 17 -> promptApiKey(player);
+            case 17 -> showApiKeyInstructions(player);
             default -> {
             }
         }
@@ -64,11 +68,10 @@ public class MainMenuGui implements MarketplaceGui {
         });
     }
 
-    private void promptApiKey(Player player) {
-        plugin.getChatInput().prompt(player, "§eType your new API key in chat:", key -> {
-            plugin.updateApiKey(key);
-            player.sendMessage("§aAPI key updated. It now applies to all marketplace requests.");
-        });
+    private void showApiKeyInstructions(Player player) {
+        player.closeInventory();
+        player.sendMessage("§eRun this from console (or in-game, but console keeps it out of chat/logs):");
+        player.sendMessage("§f/mcmarket setkey <your-api-key>");
     }
 
     static ItemStack icon(Material material, String name, List<String> lore) {
