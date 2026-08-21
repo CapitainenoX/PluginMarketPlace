@@ -15,6 +15,7 @@ const NAV = [
   { id: "gui", label: "In-game GUI" },
   { id: "commands", label: "Commands" },
   { id: "config", label: "Configuration" },
+  { id: "self-publish", label: "Self-update setup" },
   { id: "api-keys", label: "API keys" },
   { id: "mcp", label: "MCP server (AI publishing)" },
   { id: "moderation", label: "Moderation & roles" },
@@ -162,7 +163,11 @@ export default function DocsPage() {
               in <Code>self-plugin-slug</Code>. Overwrites this plugin&apos;s
               own jar file in place (no leftover duplicate jar, no touching{" "}
               <Code>config.yml</Code> or its data folder), still requires a
-              restart to load.
+              restart to load.{" "}
+              <strong className="text-foreground">This only works once MCMarket itself is published as a listing on
+              your marketplace</strong> (it&apos;s just another plugin entry, self-hosted) —
+              run <Code>deploy/scripts/publish-mcmarket.sh</Code> (see below) once after your first
+              deploy, and again after every plugin-paper rebuild, to keep that listing current.
             </li>
             <li>
               <strong className="text-foreground">Settings</strong> — shows the exact command to set the API key.
@@ -260,6 +265,43 @@ self-plugin-slug: "mcmarket"`}
         </RevealItem>
 
         <RevealItem index={6} step={40}>
+        <section className="mb-14">
+          <H2 id="self-publish">Keeping MCMarket self-updatable</H2>
+          <P>
+            Self-update needs MCMarket to exist as a normal listing on your
+            own marketplace &mdash; there&apos;s no special-cased backend
+            path for it, it&apos;s just another plugin entry. Rather than
+            uploading it by hand through the dashboard every release,{" "}
+            <Code>deploy/scripts/publish-mcmarket.sh</Code> does it for you:
+            creates the <Code>mcmarket</Code> listing if it doesn&apos;t
+            exist yet, approves it, reads the version straight out of{" "}
+            <Code>plugin-paper/pom.xml</Code>, and uploads that build if it
+            isn&apos;t already published. Safe to re-run &mdash; it skips
+            the upload if that version is already there.
+          </P>
+          <pre className="text-xs bg-neutral-100 border border-border p-4 overflow-x-auto">
+{`cd plugin-paper && mvn -q -DskipTests package && cd ..
+
+MC_API_URL=https://mc-api.corelabs.network \\
+MC_ADMIN_USER=your-admin-username \\
+MC_ADMIN_PASS=your-admin-password \\
+bash deploy/scripts/publish-mcmarket.sh`}
+          </pre>
+          <P>
+            <span className="mt-2 inline-block">
+              Requires <Code>curl</Code> and <Code>jq</Code>, and an existing
+              admin account (see <a href="#moderation" className="underline underline-offset-4 hover:opacity-70">Moderation & roles</a>{" "}
+              for how to promote one). Credentials are only ever read from
+              the environment for that one run &mdash; nothing is stored.
+              Run it once after your first deploy, then again after every
+              plugin-paper rebuild you want servers to be able to
+              self-update to.
+            </span>
+          </P>
+        </section>
+        </RevealItem>
+
+        <RevealItem index={7} step={40}>
         <section className="mb-14">
           <H2 id="api-keys">API keys</H2>
           <P>
