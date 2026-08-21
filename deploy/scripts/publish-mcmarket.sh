@@ -23,7 +23,7 @@ set -euo pipefail
 
 API_URL="${MC_API_URL:-http://localhost:8080}"
 ADMIN_USER="${MC_ADMIN_USER:?Set MC_ADMIN_USER to an admin account username}"
-ADMIN_PASS="${MC_ADMIN_PASS:?Set MC_ADMIN_PASS to that account's password}"
+ADMIN_PASS="${MC_ADMIN_PASS:?Set MC_ADMIN_PASS to the password for that account}"
 SLUG="${MC_SELF_SLUG:-mcmarket}"
 JAR_PATH="${MC_JAR_PATH:-$(dirname "$0")/../../plugin-paper/target/mcmarket-plugin.jar}"
 POM_PATH="$(dirname "$0")/../../plugin-paper/pom.xml"
