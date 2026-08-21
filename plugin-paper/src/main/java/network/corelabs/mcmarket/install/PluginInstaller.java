@@ -59,7 +59,7 @@ public class PluginInstaller {
         }
     }
 
-    private final MarketplaceApiClient api;
+    private volatile MarketplaceApiClient api;
     private final Path pluginsDir;
     private final Path manifestFile;
     private final Gson gson = new Gson();
@@ -68,6 +68,11 @@ public class PluginInstaller {
         this.api = api;
         this.pluginsDir = pluginsDir;
         this.manifestFile = pluginDataFolder.resolve("installed.json");
+    }
+
+    /** Swaps the live API client (e.g. after the admin sets a new API key in-game). */
+    public void setApiClient(MarketplaceApiClient api) {
+        this.api = api;
     }
 
     /** Blocking: downloads the jar, verifies its hash, and atomically installs it. Call off the main thread. */
@@ -106,6 +111,41 @@ public class PluginInstaller {
                 Thread.currentThread().interrupt();
             }
             return Result.fail("Install failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Self-update: overwrites the exact currently-running jar file in place
+     * (temp file on the same directory, then an atomic move onto the same
+     * path), after verifying the download's hash. Never records anything in
+     * installed.json - self is not just another manifest entry, it IS this
+     * running plugin, and must never end up as a second jar file alongside
+     * the old one (Paper would then try to load both on restart).
+     */
+    public Result installSelf(Path selfJarPath, PluginVersion version) {
+        Path dir = selfJarPath.getParent();
+        Path tempFile = dir.resolve(".mcmarket-self-" + UUID.randomUUID() + ".tmp");
+        try {
+            api.downloadVersion(version.id, tempFile);
+
+            String actualHash = sha256(tempFile);
+            if (version.file_sha256 == null || !version.file_sha256.equalsIgnoreCase(actualHash)) {
+                Files.deleteIfExists(tempFile);
+                return Result.fail("Downloaded file hash did not match the marketplace's recorded hash. Self-update aborted.");
+            }
+
+            Files.move(tempFile, selfJarPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            return Result.ok("Updated MCMarket itself to " + version.version + ". Restart the server to load it.");
+        } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
+            try {
+                Files.deleteIfExists(tempFile);
+            } catch (IOException ignored) {
+                // best effort cleanup
+            }
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            return Result.fail("Self-update failed: " + e.getMessage());
         }
     }
 

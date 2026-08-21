@@ -47,6 +47,8 @@ public class PluginDetailGui implements MarketplaceGui {
         inventory.clear();
         if (loadFailed || summary == null) {
             inventory.setItem(13, MainMenuGui.icon(Material.BARRIER, "Failed to load plugin", List.of()));
+            inventory.setItem(22, MainMenuGui.icon(Material.ARROW, "Back", List.of()));
+            GuiUtil.fillEmpty(inventory);
             return;
         }
 
@@ -61,12 +63,14 @@ public class PluginDetailGui implements MarketplaceGui {
             lore.add("No approved versions published yet.");
         }
         lore.add("Downloads: " + summary.downloads_count);
-        inventory.setItem(13, MainMenuGui.icon(Material.PAPER, summary.name, lore));
+        Material icon = plugin.getInstaller().loadManifest().containsKey(summary.slug) ? Material.LIME_WOOL : Material.PAPER;
+        inventory.setItem(13, MainMenuGui.icon(icon, summary.name, lore));
 
         if (latestVersion != null) {
             inventory.setItem(15, MainMenuGui.icon(Material.ANVIL, "Install / Update", List.of("Click to review and confirm")));
         }
         inventory.setItem(22, MainMenuGui.icon(Material.ARROW, "Back", List.of()));
+        GuiUtil.fillEmpty(inventory);
     }
 
     private static String shorten(String text) {

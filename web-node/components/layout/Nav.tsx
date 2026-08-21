@@ -18,6 +18,9 @@ export async function Nav() {
           <Link href="/install" className="hover:opacity-60 transition-opacity">
             Get the plugin
           </Link>
+          <Link href="/docs" className="hover:opacity-60 transition-opacity">
+            Docs
+          </Link>
           {user ? (
             <>
               <Link href="/dashboard" className="hover:opacity-60 transition-opacity">

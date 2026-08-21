@@ -52,7 +52,7 @@ export function DownloadPanel({ versions }: { versions: PluginVersion[] }) {
                   <button
                     key={v.id}
                     onClick={() => pickVersion(v)}
-                    className="w-full text-left px-4 py-3 hover:bg-neutral-100 dark:hover:bg-neutral-900 border-b border-border last:border-b-0 transition-colors"
+                    className="w-full text-left px-4 py-3 hover:bg-neutral-100 border-b border-border last:border-b-0 transition-colors"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <span className="font-semibold text-sm">{v.version}</span>
@@ -88,7 +88,7 @@ export function DownloadPanel({ versions }: { versions: PluginVersion[] }) {
                   <button
                     key={l}
                     onClick={() => confirmLoader(l)}
-                    className="border border-border px-4 py-2.5 text-sm text-left hover:border-foreground hover:bg-neutral-100 dark:hover:bg-neutral-900 transition-colors"
+                    className="border border-border px-4 py-2.5 text-sm text-left hover:border-foreground hover:bg-neutral-100 transition-colors"
                   >
                     {LOADER_LABEL[l]}
                   </button>

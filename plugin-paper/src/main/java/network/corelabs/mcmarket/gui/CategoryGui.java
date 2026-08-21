@@ -84,6 +84,7 @@ public class CategoryGui implements MarketplaceGui {
                 inventory.setItem(50, MainMenuGui.icon(Material.ARROW, "Next Page", List.of()));
             }
         }
+        GuiUtil.fillEmpty(inventory);
     }
 
     @Override

@@ -26,8 +26,8 @@ public class GuiListener implements Listener {
 
     @EventHandler
     public void onPrepareAnvil(PrepareAnvilEvent event) {
-        if (event.getInventory().getHolder() instanceof SearchGui) {
-            // Free-text search box: renaming the item should never cost XP levels.
+        if (event.getInventory().getHolder() instanceof SearchGui || event.getInventory().getHolder() instanceof ApiKeyGui) {
+            // Free-text input boxes: renaming the item should never cost XP levels.
             event.getInventory().setRepairCost(0);
         }
     }

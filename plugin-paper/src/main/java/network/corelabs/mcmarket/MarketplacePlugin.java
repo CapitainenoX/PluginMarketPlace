@@ -9,7 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class MarketplacePlugin extends JavaPlugin {
 
-    private MarketplaceApiClient apiClient;
+    private volatile MarketplaceApiClient apiClient;
     private PluginInstaller installer;
     private UpdateChecker updateChecker;
 
@@ -51,5 +51,36 @@ public class MarketplacePlugin extends JavaPlugin {
 
     public UpdateChecker getUpdateChecker() {
         return updateChecker;
+    }
+
+    /** The marketplace slug MCMarket itself is published under - just another catalog entry. */
+    public String getSelfPluginSlug() {
+        return getConfig().getString("self-plugin-slug", "mcmarket");
+    }
+
+    /** The exact jar file this plugin is currently running from - self-update must overwrite this in place. */
+    public java.io.File getSelfJarFile() {
+        return getFile();
+    }
+
+    /**
+     * Writes a new api-key to config.yml and swaps every live component over
+     * to a freshly-built MarketplaceApiClient, so getApiClient() (and the
+     * installer/update checker, which each hold their own reference) reflect
+     * the change without needing a restart.
+     */
+    public synchronized void updateApiKey(String newApiKey) {
+        String baseUrl = getConfig().getString("api-base-url", "mc-api.corelabs.network");
+        getConfig().set("api-key", newApiKey);
+        saveConfig();
+
+        MarketplaceApiClient newClient = new MarketplaceApiClient(baseUrl, newApiKey);
+        this.apiClient = newClient;
+        if (installer != null) {
+            installer.setApiClient(newClient);
+        }
+        if (updateChecker != null) {
+            updateChecker.setApiClient(newClient);
+        }
     }
 }

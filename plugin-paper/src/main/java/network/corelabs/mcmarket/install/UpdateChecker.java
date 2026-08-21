@@ -23,7 +23,7 @@ import java.util.logging.Level;
 public class UpdateChecker {
 
     private final JavaPlugin plugin;
-    private final MarketplaceApiClient api;
+    private volatile MarketplaceApiClient api;
     private final PluginInstaller installer;
     private final Map<String, UpdateCheckResult> latestResults = new ConcurrentHashMap<>();
     private BukkitTask task;
@@ -32,6 +32,11 @@ public class UpdateChecker {
         this.plugin = plugin;
         this.api = api;
         this.installer = installer;
+    }
+
+    /** Swaps the live API client (e.g. after the admin sets a new API key in-game). */
+    public void setApiClient(MarketplaceApiClient api) {
+        this.api = api;
     }
 
     public void start(long intervalMinutes) {

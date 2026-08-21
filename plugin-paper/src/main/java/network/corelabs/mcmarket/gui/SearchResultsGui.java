@@ -27,16 +27,18 @@ public class SearchResultsGui implements MarketplaceGui {
     private void render() {
         if (results.isEmpty()) {
             inventory.setItem(22, MainMenuGui.icon(Material.BARRIER, "No results", List.of()));
-            return;
+        } else {
+            int slot = 0;
+            for (PluginSummary p : results) {
+                if (slot >= 45) break;
+                inventory.setItem(slot++, MainMenuGui.icon(Material.PAPER, p.name, List.of(
+                        p.summary == null ? "" : p.summary,
+                        "Downloads: " + p.downloads_count,
+                        "Click for details")));
+            }
         }
-        int slot = 0;
-        for (PluginSummary p : results) {
-            if (slot >= 45) break;
-            inventory.setItem(slot++, MainMenuGui.icon(Material.PAPER, p.name, List.of(
-                    p.summary == null ? "" : p.summary,
-                    "Downloads: " + p.downloads_count,
-                    "Click for details")));
-        }
+        inventory.setItem(49, MainMenuGui.icon(Material.ARROW, "Back to Main Menu", List.of()));
+        GuiUtil.fillEmpty(inventory);
     }
 
     @Override
@@ -47,6 +49,10 @@ public class SearchResultsGui implements MarketplaceGui {
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
         int slot = event.getSlot();
+        if (slot == 49) {
+            new MainMenuGui(plugin).open(player);
+            return;
+        }
         if (slot < results.size()) {
             new PluginDetailGui(plugin, results.get(slot).slug).open(player);
         }

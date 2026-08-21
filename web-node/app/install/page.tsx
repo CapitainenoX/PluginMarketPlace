@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   description: "Install the MCMarket Paper plugin to browse and install marketplace plugins in-game.",
 };
 
-const PLUGIN_VERSION = "1.0.0";
+const PLUGIN_VERSION = "1.0.1";
 const DOWNLOAD_URL = "/downloads/mcmarket-plugin.jar";
 
 export default function InstallPage() {
@@ -44,8 +44,8 @@ export default function InstallPage() {
           <li>
             <span className="font-medium">1. Drop the jar in.</span>
             <p className="text-muted mt-1">
-              Place <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">mcmarket-plugin.jar</code> in
-              your server&apos;s <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">plugins/</code> folder
+              Place <code className="text-xs bg-neutral-100 px-1.5 py-0.5">mcmarket-plugin.jar</code> in
+              your server&apos;s <code className="text-xs bg-neutral-100 px-1.5 py-0.5">plugins/</code> folder
               and restart the server.
             </p>
           </li>
@@ -53,30 +53,34 @@ export default function InstallPage() {
             <span className="font-medium">2. Get an API key.</span>
             <p className="text-muted mt-1">
               From your dashboard, go to{" "}
-              <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">API Keys</code>, create one scoped{" "}
-              <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">full</code> or{" "}
-              <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">upload_only</code>, and copy the token
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">API Keys</code>, create one scoped{" "}
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">full</code> or{" "}
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">upload_only</code>, and copy the token
               &mdash; it&apos;s only shown once.
             </p>
           </li>
           <li>
             <span className="font-medium">3. Configure the plugin.</span>
             <p className="text-muted mt-1">
-              Edit <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">plugins/MCMarket/config.yml</code>{" "}
+              Edit <code className="text-xs bg-neutral-100 px-1.5 py-0.5">plugins/MCMarket/config.yml</code>{" "}
               and set your API base URL and key:
             </p>
-            <pre className="mt-2 text-xs bg-neutral-100 dark:bg-neutral-900 border border-border p-4 overflow-x-auto">
+            <pre className="mt-2 text-xs bg-neutral-100 border border-border p-4 overflow-x-auto">
 {`api-base-url: "https://mc-api.corelabs.network"
 api-key: "your-server-api-key"`}
             </pre>
+            <p className="text-muted mt-1">
+              Or skip the file entirely: open <code className="text-xs bg-neutral-100 px-1.5 py-0.5">/marketplace</code>{" "}
+              in-game and use <span className="font-medium text-foreground">Settings &rarr; Set API Key</span> — takes effect immediately, no restart.
+            </p>
           </li>
           <li>
             <span className="font-medium">4. Restart, then open the menu.</span>
             <p className="text-muted mt-1">
               Restart the server once more to load the config, then run{" "}
-              <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">/marketplace</code> in-game (aliases:{" "}
-              <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">/mcmarket</code>,{" "}
-              <code className="text-xs bg-neutral-100 dark:bg-neutral-900 px-1.5 py-0.5">/market</code>).
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">/marketplace</code> in-game (aliases:{" "}
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">/mcmarket</code>,{" "}
+              <code className="text-xs bg-neutral-100 px-1.5 py-0.5">/market</code>).
             </p>
           </li>
         </ol>

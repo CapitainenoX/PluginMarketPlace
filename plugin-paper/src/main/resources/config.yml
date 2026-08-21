@@ -11,3 +11,9 @@ api-key: ''
 
 # Minutes between automatic update checks against installed plugins.
 update-check-interval-minutes: 45
+
+# The marketplace slug this plugin (MCMarket itself) is published under.
+# It is just another entry in the marketplace, so self-update needs to know
+# which listing to check/download from. Set this to whatever slug you used
+# when you uploaded MCMarket's own jar to your marketplace instance.
+self-plugin-slug: 'mcmarket'

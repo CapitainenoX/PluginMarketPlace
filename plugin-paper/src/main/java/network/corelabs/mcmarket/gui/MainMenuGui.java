@@ -19,10 +19,16 @@ public class MainMenuGui implements MarketplaceGui {
     public MainMenuGui(MarketplacePlugin plugin) {
         this.plugin = plugin;
         this.inventory = Bukkit.createInventory(this, 27, "Plugin Marketplace");
-        inventory.setItem(11, icon(Material.CHEST, "Browse", List.of("Browse plugins by category")));
-        inventory.setItem(13, icon(Material.COMPASS, "Search", List.of("Search plugins by name")));
-        inventory.setItem(15, icon(Material.NETHER_STAR, "My Installed / Updates", List.of("See what's installed", "and check for updates")));
-        inventory.setItem(22, icon(Material.BOOK, "About", List.of("MCMarket - corelabs.network", "self-hosted plugin marketplace client")));
+        inventory.setItem(10, icon(Material.CHEST, "Browse by Category", List.of("Browse plugins grouped", "by category")));
+        inventory.setItem(12, icon(Material.ENDER_CHEST, "Browse All Plugins", List.of("See every plugin on", "the marketplace")));
+        inventory.setItem(14, icon(Material.COMPASS, "Search", List.of("Search plugins by name")));
+        inventory.setItem(16, icon(Material.NETHER_STAR, "My Installed / Updates", List.of(
+                "See what's installed - including",
+                "jars placed here manually - and",
+                "check for updates")));
+        inventory.setItem(20, icon(Material.LEVER, "Settings", List.of("Set the marketplace API key")));
+        inventory.setItem(24, icon(Material.BOOK, "About", List.of("MCMarket - corelabs.network", "self-hosted plugin marketplace client")));
+        GuiUtil.fillEmpty(inventory);
     }
 
     @Override
@@ -33,16 +39,12 @@ public class MainMenuGui implements MarketplaceGui {
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
         switch (event.getSlot()) {
-            case 11 -> new CategoryGui(plugin).open(player);
-            case 13 -> new SearchGui(plugin).open(player);
-            case 15 -> {
-                player.sendMessage("Checking for updates...");
-                Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-                    plugin.getUpdateChecker().checkNow();
-                    Bukkit.getScheduler().runTask(plugin, () -> new UpdatesGui(plugin).open(player));
-                });
-            }
-            case 22 -> player.sendMessage("MCMarket client for the corelabs.network plugin marketplace.");
+            case 10 -> new CategoryGui(plugin).open(player);
+            case 12 -> new BrowseAllGui(plugin, 0).open(player);
+            case 14 -> new SearchGui(plugin).open(player);
+            case 16 -> new UpdatesGui(plugin).open(player);
+            case 20 -> new ApiKeyGui(plugin).open(player);
+            case 24 -> player.sendMessage("MCMarket client for the corelabs.network plugin marketplace.");
             default -> {
             }
         }
