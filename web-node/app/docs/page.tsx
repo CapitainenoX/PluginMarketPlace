@@ -187,20 +187,45 @@ export default function DocsPage() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border last:border-b-0">
+              <tr className="border-b border-border">
                 <td className="p-3"><Code>/marketplace</Code></td>
                 <td className="p-3 text-muted"><Code>/mcmarket</Code>, <Code>/market</Code></td>
                 <td className="p-3 text-muted"><Code>mcmarket.use</Code> (default: op)</td>
-                <td className="p-3 text-muted">Opens the marketplace GUI.</td>
+                <td className="p-3 text-muted">Opens the marketplace GUI. Players only.</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="p-3"><Code>/mcmarket reload</Code></td>
+                <td className="p-3 text-muted">&mdash;</td>
+                <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
+                <td className="p-3 text-muted">Re-reads <Code>config.yml</Code> (API URL/key, check interval) with no restart. Works from console.</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="p-3"><Code>/mcmarket update self</Code></td>
+                <td className="p-3 text-muted">&mdash;</td>
+                <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
+                <td className="p-3 text-muted">Updates MCMarket itself in one shot, no GUI confirmation. Works from console.</td>
+              </tr>
+              <tr className="border-b border-border">
+                <td className="p-3"><Code>/mcmarket update &lt;slug&gt;</Code></td>
+                <td className="p-3 text-muted">&mdash;</td>
+                <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
+                <td className="p-3 text-muted">Updates one installed-via-MCMarket plugin by its marketplace slug. Works from console.</td>
+              </tr>
+              <tr className="border-b border-border last:border-b-0">
+                <td className="p-3"><Code>/mcmarket update all</Code></td>
+                <td className="p-3 text-muted">&mdash;</td>
+                <td className="p-3 text-muted"><Code>mcmarket.admin</Code> (default: op)</td>
+                <td className="p-3 text-muted">Updates every outdated plugin MCMarket installed. Works from console.</td>
               </tr>
             </tbody>
           </table>
           <P>
             <span className="mt-2 inline-block">
-              Any other marketplace plugin&apos;s own commands (e.g. its{" "}
-              <Code>reload</Code>) are listed per-plugin inside{" "}
-              <strong className="text-foreground">My Installed / Updates</strong> in the GUI, not here — this table is only
-              MCMarket&apos;s own command.
+              Every update from these commands still writes the jar and waits
+              for a restart to load it &mdash; same restart rule as the GUI.
+              A plugin&apos;s own commands (e.g. its <Code>reload</Code>) are
+              listed per-plugin inside{" "}
+              <strong className="text-foreground">My Installed / Updates</strong> in the GUI, not here.
             </span>
           </P>
         </section>
