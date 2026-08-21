@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { currentUserOrNull } from "@/lib/api-client";
 import { LogoutButton } from "./LogoutButton";
+import { Reveal } from "@/components/motion/Reveal";
 
 export async function Nav() {
   const user = await currentUserOrNull();
 
   return (
     <header className="border-b border-border">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <Reveal className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between" y={10} duration={450} delay={0}>
         <Link href="/" className="text-sm font-bold tracking-[0.2em] uppercase">
           MC Marketplace
         </Link>
@@ -48,7 +49,7 @@ export async function Nav() {
             </>
           )}
         </nav>
-      </div>
+      </Reveal>
     </header>
   );
 }

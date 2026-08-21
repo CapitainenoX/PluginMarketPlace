@@ -19,15 +19,14 @@ public class MainMenuGui implements MarketplaceGui {
     public MainMenuGui(MarketplacePlugin plugin) {
         this.plugin = plugin;
         this.inventory = Bukkit.createInventory(this, 27, "Plugin Marketplace");
-        inventory.setItem(10, icon(Material.CHEST, "Browse by Category", List.of("Browse plugins grouped", "by category")));
-        inventory.setItem(12, icon(Material.ENDER_CHEST, "Browse All Plugins", List.of("See every plugin on", "the marketplace")));
-        inventory.setItem(14, icon(Material.COMPASS, "Search", List.of("Search plugins by name")));
-        inventory.setItem(16, icon(Material.NETHER_STAR, "My Installed / Updates", List.of(
+        inventory.setItem(11, icon(Material.ENDER_CHEST, "All Plugins", List.of("Browse every plugin on", "the marketplace")));
+        inventory.setItem(13, icon(Material.COMPASS, "Search", List.of("Search plugins by name")));
+        inventory.setItem(15, icon(Material.NETHER_STAR, "My Installed / Updates", List.of(
                 "See what's installed - including",
                 "jars placed here manually - and",
-                "check for updates")));
-        inventory.setItem(20, icon(Material.LEVER, "Settings", List.of("Set the marketplace API key")));
-        inventory.setItem(24, icon(Material.BOOK, "About", List.of("MCMarket - corelabs.network", "self-hosted plugin marketplace client")));
+                "check for updates",
+                "(also where MCMarket updates itself)")));
+        inventory.setItem(17, icon(Material.LEVER, "Settings", List.of("Set the marketplace API key")));
         GuiUtil.fillEmpty(inventory);
     }
 
@@ -39,12 +38,10 @@ public class MainMenuGui implements MarketplaceGui {
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
         switch (event.getSlot()) {
-            case 10 -> new CategoryGui(plugin).open(player);
-            case 12 -> new BrowseAllGui(plugin, 0).open(player);
-            case 14 -> new SearchGui(plugin).open(player);
-            case 16 -> new UpdatesGui(plugin).open(player);
-            case 20 -> new ApiKeyGui(plugin).open(player);
-            case 24 -> player.sendMessage("MCMarket client for the corelabs.network plugin marketplace.");
+            case 11 -> new BrowseAllGui(plugin, 0).open(player);
+            case 13 -> new SearchGui(plugin).open(player);
+            case 15 -> new UpdatesGui(plugin).open(player);
+            case 17 -> new ApiKeyGui(plugin).open(player);
             default -> {
             }
         }

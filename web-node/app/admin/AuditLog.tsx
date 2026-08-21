@@ -1,6 +1,39 @@
+"use client";
+
+import { useLayoutEffect, useRef } from "react";
+import { animate, stagger } from "animejs";
 import type { AuditLogEntry } from "@/lib/types";
 
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export function AuditLog({ entries }: { entries: AuditLogEntry[] }) {
+  const tbodyRef = useRef<HTMLTableSectionElement>(null);
+
+  // Table rows can't be wrapped in RevealItem's <div> (invalid inside <tbody>),
+  // so animate the <tr> elements directly with a staggered entrance instead.
+  useLayoutEffect(() => {
+    const tbody = tbodyRef.current;
+    if (!tbody) return;
+    const rows = tbody.querySelectorAll("tr");
+    if (rows.length === 0) return;
+    if (prefersReducedMotion()) {
+      rows.forEach((row) => {
+        row.style.opacity = "1";
+        row.style.transform = "none";
+      });
+      return;
+    }
+    animate(rows, {
+      opacity: [0, 1],
+      translateY: [12, 0],
+      duration: 450,
+      delay: stagger(40),
+      ease: "outCubic",
+    });
+  }, [entries]);
+
   if (entries.length === 0) {
     return <p className="text-sm text-muted">No audit log entries yet.</p>;
   }
@@ -17,9 +50,9 @@ export function AuditLog({ entries }: { entries: AuditLogEntry[] }) {
             <th className="p-3 font-medium">IP</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border">
+        <tbody className="divide-y divide-border" ref={tbodyRef}>
           {entries.map((entry) => (
-            <tr key={entry.id}>
+            <tr key={entry.id} style={{ opacity: 0, transform: "translateY(12px)" }}>
               <td className="p-3 whitespace-nowrap text-muted">
                 {new Date(entry.created_at).toLocaleString()}
               </td>

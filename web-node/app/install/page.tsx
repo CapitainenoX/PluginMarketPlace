@@ -1,34 +1,38 @@
 import type { Metadata } from "next";
+import { Reveal } from "@/components/motion/Reveal";
 
 export const metadata: Metadata = {
   title: "Get the plugin — MC Marketplace",
   description: "Install the MCMarket Paper plugin to browse and install marketplace plugins in-game.",
 };
 
-const PLUGIN_VERSION = "1.0.1";
+const PLUGIN_VERSION = "1.0.2";
 const DOWNLOAD_URL = "/downloads/mcmarket-plugin.jar";
 
 export default function InstallPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16 w-full">
-      <h1 className="text-4xl font-bold mb-2">Get the plugin</h1>
-      <p className="text-muted text-lg leading-relaxed">
-        MCMarket is the in-game client for this marketplace. Drop it into your
-        Paper server and browse, install, and update plugins entirely from an
-        inventory GUI &mdash; no manual downloads.
-      </p>
+      <Reveal delay={0}>
+        <h1 className="text-4xl font-bold mb-2">Get the plugin</h1>
+        <p className="text-muted text-lg leading-relaxed">
+          MCMarket is the in-game client for this marketplace. Drop it into your
+          Paper server and browse, install, and update plugins entirely from an
+          inventory GUI &mdash; no manual downloads.
+        </p>
 
-      <div className="flex items-center gap-4 mt-8">
-        <a
-          href={DOWNLOAD_URL}
-          download
-          className="bg-foreground text-background px-6 py-3 text-sm uppercase tracking-wide font-medium hover:bg-neutral-800 transition-colors"
-        >
-          Download mcmarket-plugin.jar
-        </a>
-        <span className="text-sm text-muted">v{PLUGIN_VERSION} &middot; single jar</span>
-      </div>
+        <div className="flex items-center gap-4 mt-8">
+          <a
+            href={DOWNLOAD_URL}
+            download
+            className="bg-foreground text-background px-6 py-3 text-sm uppercase tracking-wide font-medium hover:bg-neutral-800 transition-colors"
+          >
+            Download mcmarket-plugin.jar
+          </a>
+          <span className="text-sm text-muted">v{PLUGIN_VERSION} &middot; single jar</span>
+        </div>
+      </Reveal>
 
+      <Reveal delay={100}>
       <section className="mt-14">
         <h2 className="text-xl font-semibold mb-4">Requirements</h2>
         <ul className="text-sm text-muted leading-relaxed list-disc list-inside space-y-1">
@@ -37,7 +41,9 @@ export default function InstallPage() {
           <li>An account on this marketplace, and a server API key from your dashboard</li>
         </ul>
       </section>
+      </Reveal>
 
+      <Reveal delay={180}>
       <section className="mt-10">
         <h2 className="text-xl font-semibold mb-4">Setup</h2>
         <ol className="text-sm leading-relaxed space-y-4">
@@ -85,7 +91,9 @@ api-key: "your-server-api-key"`}
           </li>
         </ol>
       </section>
+      </Reveal>
 
+      <Reveal delay={260}>
       <section className="mt-10">
         <h2 className="text-xl font-semibold mb-4">Good to know</h2>
         <p className="text-sm text-muted leading-relaxed">
@@ -96,6 +104,7 @@ api-key: "your-server-api-key"`}
           the GUI will tell you when that&apos;s needed.
         </p>
       </section>
+      </Reveal>
     </div>
   );
 }

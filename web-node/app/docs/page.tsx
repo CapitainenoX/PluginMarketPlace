@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Reveal, RevealItem } from "@/components/motion/Reveal";
 
 export const metadata: Metadata = {
   title: "Docs — MC Marketplace",
@@ -45,25 +46,30 @@ export default function DocsPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-16 w-full flex gap-12">
       <aside className="hidden lg:block w-56 shrink-0">
-        <div className="sticky top-8">
-          <div className="text-xs uppercase tracking-wide text-muted mb-3">Contents</div>
-          <nav className="flex flex-col gap-1 text-sm">
-            {NAV.map((n) => (
-              <a key={n.id} href={`#${n.id}`} className="text-muted hover:text-foreground transition-colors py-0.5">
-                {n.label}
-              </a>
-            ))}
-          </nav>
-        </div>
+        <Reveal delay={0}>
+          <div className="sticky top-8">
+            <div className="text-xs uppercase tracking-wide text-muted mb-3">Contents</div>
+            <nav className="flex flex-col gap-1 text-sm">
+              {NAV.map((n) => (
+                <a key={n.id} href={`#${n.id}`} className="text-muted hover:text-foreground transition-colors py-0.5">
+                  {n.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </Reveal>
       </aside>
 
       <div className="min-w-0 flex-1">
-        <h1 className="text-4xl font-bold mb-2">Documentation</h1>
-        <p className="text-muted text-lg leading-relaxed mb-10">
-          Everything for running this marketplace: the website, the in-game
-          MCMarket plugin, API keys, and AI-driven publishing over MCP.
-        </p>
+        <Reveal delay={0}>
+          <h1 className="text-4xl font-bold mb-2">Documentation</h1>
+          <p className="text-muted text-lg leading-relaxed mb-10">
+            Everything for running this marketplace: the website, the in-game
+            MCMarket plugin, API keys, and AI-driven publishing over MCP.
+          </p>
+        </Reveal>
 
+        <RevealItem index={0} step={40}>
         <section className="mb-14">
           <H2 id="overview">Overview</H2>
           <P>
@@ -82,7 +88,9 @@ export default function DocsPage() {
             <a href="#security" className="underline underline-offset-4 hover:opacity-70">Security model</a>.
           </P>
         </section>
+        </RevealItem>
 
+        <RevealItem index={1} step={40}>
         <section className="mb-14">
           <H2 id="website">Website</H2>
           <H3>Browsing</H3>
@@ -104,7 +112,9 @@ export default function DocsPage() {
             while a specific bad version stays rejected.
           </P>
         </section>
+        </RevealItem>
 
+        <RevealItem index={2} step={40}>
         <section className="mb-14">
           <H2 id="plugin">MCMarket plugin</H2>
           <P>
@@ -122,13 +132,14 @@ export default function DocsPage() {
             plugin.
           </P>
         </section>
+        </RevealItem>
 
+        <RevealItem index={3} step={40}>
         <section className="mb-14">
           <H2 id="gui">In-game GUI</H2>
-          <P>Open the menu with <Code>/marketplace</Code>. Six entry points:</P>
+          <P>Open the menu with <Code>/marketplace</Code>. Four entry points, no clutter:</P>
           <ul className="text-sm text-muted leading-relaxed list-disc list-inside space-y-2 mb-3">
-            <li><strong className="text-foreground">Browse by Category</strong> — plugins grouped by category, paginated.</li>
-            <li><strong className="text-foreground">Browse All</strong> — every approved plugin, paginated, no category filter.</li>
+            <li><strong className="text-foreground">All Plugins</strong> — every approved plugin on the marketplace, paginated.</li>
             <li><strong className="text-foreground">Search</strong> — type a query into the anvil text box and click the result slot to submit.</li>
             <li>
               <strong className="text-foreground">My Installed / Updates</strong> — every marketplace plugin currently on
@@ -161,7 +172,9 @@ export default function DocsPage() {
             </li>
           </ul>
         </section>
+        </RevealItem>
 
+        <RevealItem index={4} step={40}>
         <section className="mb-14">
           <H2 id="commands">Commands</H2>
           <table className="w-full text-sm border border-border">
@@ -191,7 +204,9 @@ export default function DocsPage() {
             </span>
           </P>
         </section>
+        </RevealItem>
 
+        <RevealItem index={5} step={40}>
         <section className="mb-14">
           <H2 id="config">Configuration</H2>
           <P>All keys live in <Code>plugins/MCMarket/config.yml</Code>:</P>
@@ -210,7 +225,9 @@ update-check-interval-minutes: 45
 self-plugin-slug: "mcmarket"`}
           </pre>
         </section>
+        </RevealItem>
 
+        <RevealItem index={6} step={40}>
         <section className="mb-14">
           <H2 id="api-keys">API keys</H2>
           <P>
@@ -227,7 +244,9 @@ self-plugin-slug: "mcmarket"`}
             hash — if you lose one, revoke it and create a new one.
           </P>
         </section>
+        </RevealItem>
 
+        <RevealItem index={7} step={40}>
         <section className="mb-14">
           <H2 id="mcp">MCP server (AI publishing)</H2>
           <P>
@@ -252,7 +271,9 @@ self-plugin-slug: "mcmarket"`}
             </span>
           </P>
         </section>
+        </RevealItem>
 
+        <RevealItem index={8} step={40}>
         <section className="mb-14">
           <H2 id="moderation">Moderation & roles</H2>
           <P>
@@ -271,7 +292,9 @@ self-plugin-slug: "mcmarket"`}
   "sqlite3 /app/data/marketplace.db \\"UPDATE users SET role='admin' WHERE username='NAME';\\""`}
           </pre>
         </section>
+        </RevealItem>
 
+        <RevealItem index={9} step={40}>
         <section className="mb-14">
           <H2 id="security">Security model</H2>
           <ul className="text-sm text-muted leading-relaxed list-disc list-inside space-y-1">
@@ -284,7 +307,9 @@ self-plugin-slug: "mcmarket"`}
             <li>All mutating actions (login, upload, approve, ban, key creation) are audit-logged.</li>
           </ul>
         </section>
+        </RevealItem>
 
+        <RevealItem index={10} step={40}>
         <section className="mb-14">
           <H2 id="troubleshooting">Troubleshooting</H2>
           <H3>Login doesn't work after registering</H3>
@@ -309,6 +334,7 @@ self-plugin-slug: "mcmarket"`}
             self-updates of MCMarket itself.
           </P>
         </section>
+        </RevealItem>
       </div>
     </div>
   );

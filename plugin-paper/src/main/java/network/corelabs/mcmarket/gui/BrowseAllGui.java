@@ -26,7 +26,7 @@ public class BrowseAllGui implements MarketplaceGui {
     public BrowseAllGui(MarketplacePlugin plugin, int page) {
         this.plugin = plugin;
         this.page = page;
-        this.inventory = Bukkit.createInventory(this, 54, "Browse All Plugins");
+        this.inventory = Bukkit.createInventory(this, 54, "All Plugins");
         load();
     }
 

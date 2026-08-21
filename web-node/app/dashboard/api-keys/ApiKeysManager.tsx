@@ -5,6 +5,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { Button } from "@/components/ui/Button";
 import { Input, Label } from "@/components/ui/Input";
 import type { ApiKey, ApiKeyScope } from "@/lib/types";
+import { RevealItem } from "@/components/motion/Reveal";
 
 export function ApiKeysManager({ initialKeys }: { initialKeys: ApiKey[] }) {
   const [keys, setKeys] = useState(initialKeys);
@@ -69,26 +70,28 @@ export function ApiKeysManager({ initialKeys }: { initialKeys: ApiKey[] }) {
 
       <div className="flex flex-col divide-y divide-border border border-border">
         {keys.length === 0 && <p className="p-6 text-sm text-muted">No API keys yet.</p>}
-        {keys.map((key) => (
-          <div key={key.id} className="p-5 flex items-center justify-between gap-4 flex-wrap">
-            <div>
-              <p className="font-medium">{key.name}</p>
-              <p className="text-xs text-muted mt-0.5">
-                {key.key_prefix}&hellip; &middot; {key.scope} &middot; created{" "}
-                {new Date(key.created_at).toLocaleDateString()}
-              </p>
+        {keys.map((key, i) => (
+          <RevealItem key={key.id} index={i}>
+            <div className="p-5 flex items-center justify-between gap-4 flex-wrap">
+              <div>
+                <p className="font-medium">{key.name}</p>
+                <p className="text-xs text-muted mt-0.5">
+                  {key.key_prefix}&hellip; &middot; {key.scope} &middot; created{" "}
+                  {new Date(key.created_at).toLocaleDateString()}
+                </p>
+              </div>
+              {key.revoked ? (
+                <span className="text-xs uppercase tracking-wide text-muted">Revoked</span>
+              ) : (
+                <button
+                  onClick={() => onRevoke(key.id)}
+                  className="text-xs uppercase tracking-wide border border-foreground px-3 py-1.5 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors cursor-pointer"
+                >
+                  Revoke
+                </button>
+              )}
             </div>
-            {key.revoked ? (
-              <span className="text-xs uppercase tracking-wide text-muted">Revoked</span>
-            ) : (
-              <button
-                onClick={() => onRevoke(key.id)}
-                className="text-xs uppercase tracking-wide border border-foreground px-3 py-1.5 hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors cursor-pointer"
-              >
-                Revoke
-              </button>
-            )}
-          </div>
+          </RevealItem>
         ))}
       </div>
     </div>

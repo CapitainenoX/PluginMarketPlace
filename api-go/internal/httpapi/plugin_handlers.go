@@ -4,8 +4,10 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"mcmarket/api/internal/db"
+	"mcmarket/api/internal/moderation"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -75,6 +77,15 @@ func (s *Server) handleCreatePlugin(w http.ResponseWriter, r *http.Request) {
 	var req createPluginRequest
 	if err := decodeJSON(r, &req); err != nil || req.Name == "" {
 		writeError(w, http.StatusBadRequest, "name is required")
+		return
+	}
+	if reason := moderation.Check(map[string]string{
+		"name":        req.Name,
+		"summary":     req.Summary,
+		"description": req.Description,
+		"tags":        strings.Join(req.Tags, " "),
+	}); reason != "" {
+		writeError(w, http.StatusBadRequest, reason)
 		return
 	}
 
@@ -149,6 +160,20 @@ func (s *Server) handlePatchPlugin(w http.ResponseWriter, r *http.Request) {
 	var req patchPluginRequest
 	if err := decodeJSON(r, &req); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	checkFields := map[string]string{}
+	if req.Name != nil {
+		checkFields["name"] = *req.Name
+	}
+	if req.Summary != nil {
+		checkFields["summary"] = *req.Summary
+	}
+	if req.Description != nil {
+		checkFields["description"] = *req.Description
+	}
+	if reason := moderation.Check(checkFields); reason != "" {
+		writeError(w, http.StatusBadRequest, reason)
 		return
 	}
 

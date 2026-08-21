@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import { animate } from "animejs";
 import { api } from "@/lib/api-client";
 import type { Loader, PluginVersion } from "@/lib/types";
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 const LOADER_LABEL: Record<Loader, string> = {
   paper: "Paper",
@@ -15,8 +20,29 @@ type Step = "closed" | "version" | "loader";
 export function DownloadPanel({ versions }: { versions: PluginVersion[] }) {
   const [step, setStep] = useState<Step>("closed");
   const [selected, setSelected] = useState<PluginVersion | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const approved = versions.filter((v) => v.status === "approved");
+
+  useLayoutEffect(() => {
+    const el = panelRef.current;
+    if (!el || step === "closed") return;
+    if (prefersReducedMotion()) {
+      el.style.opacity = "1";
+      el.style.transform = "none";
+      return;
+    }
+    el.style.opacity = "0";
+    el.style.transform = "translateY(-6px) scale(0.97)";
+    animate(el, {
+      opacity: [0, 1],
+      translateY: [-6, 0],
+      scale: [0.97, 1],
+      duration: 220,
+      ease: "outCubic",
+    });
+  }, [step]);
+
   if (approved.length === 0) return null;
 
   function pickVersion(v: PluginVersion) {
@@ -41,7 +67,11 @@ export function DownloadPanel({ versions }: { versions: PluginVersion[] }) {
       </button>
 
       {step !== "closed" && (
-        <div className="absolute right-0 mt-2 w-80 border border-foreground bg-background shadow-lg z-10">
+        <div
+          ref={panelRef}
+          className="absolute right-0 mt-2 w-80 border border-foreground bg-background shadow-lg z-10"
+          style={{ opacity: 0, transform: "translateY(-6px) scale(0.97)" }}
+        >
           {step === "version" && (
             <div className="flex flex-col">
               <div className="px-4 py-3 border-b border-border text-xs uppercase tracking-wide text-muted">

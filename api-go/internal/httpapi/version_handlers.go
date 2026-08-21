@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"mcmarket/api/internal/db"
+	"mcmarket/api/internal/moderation"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -95,6 +96,10 @@ func (s *Server) handleUploadVersion(w http.ResponseWriter, r *http.Request) {
 	loaders := r.FormValue("loaders")
 	if loaders == "" {
 		loaders = "paper"
+	}
+	if reason := moderation.Check(map[string]string{"changelog": changelog}); reason != "" {
+		writeError(w, http.StatusBadRequest, reason)
+		return
 	}
 
 	file, header, err := r.FormFile("file")
